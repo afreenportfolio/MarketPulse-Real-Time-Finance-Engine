@@ -1,5 +1,5 @@
 ## Phase 1: Data Pipeline
-1. I stored the daily stock data in a JSON file (with proper formatting to prevent formatting errors) to optimize API usage.
+1. I stored the daily stock data in a JSON file (with proper formatting to prevent formatting errors and increase human readability) to optimize API usage.
 2. Developed a Python script that iterates through nested timeseries data to extract key metrics (Open, High, Low, Close, Volume)
 
 ### Setup Instructions:
