@@ -1,17 +1,27 @@
-# MarketPulse-A-Real-Time-Data-Finance-Engine
-MarketPulse: An end-to-end data engineering project featuring a robust Python pipeline, local JSON caching for API optimization, and a SQL-backed historical data warehouse.
+## Phase 2: MySQL Data Pipeline
 
-### Setup Instructions
-1. Install the required libraries by running `pip install -r requirements.txt` in your terminal.
-2. Navigate to the Alpha Vantage Support Page
-3. Sign up (it's free!)
-4. Save the API key you get securely in a `.env` file with the format `VARIABLE_NAME=YOUR_KEY`.
-5. Copy/download the Python script to fetch daily stock data from this repository.
-6. Run the Python script to fecth data using API and save it to a JSON file (named `data.json`) to optimize API usage.
-7. Your final data for creating the dashboard is ready!
+This phase focuses on taking the raw stock data stored in `data.json` and migrating it into a structured MySQL relational database.
 
-### Challenge:
-- Initial raw data was saved to the JSON file as one cramped line.
-- Used `indent=4` argument while "dumping" the JSON file to make the data human readable.
-- Used `w` (write-only) argument to create the JSON file and to write to the JSON file.
-- Used the `r` (read-only) argument to read and verify the data back from the file to the Python IDLE.
+## Features
+- **Automated Ingestion**: Reads local JSON data and prepares it for SQL insertion.
+- **Idempotent Upserts**: Uses `INSERT ... ON DUPLICATE KEY UPDATE` to ensure data stays fresh without creating duplicate date entries.
+- **Environment Security**: Utilizes `.env` files to keep database credentials secure.
+
+## Database Schema
+The data is stored in a table named `ibm_daily_stock` with the following structure:
+
++-------------+---------------+------+-----+---------+-------+
+| Field       | Type          | Null | Key | Default | Extra |
++-------------+---------------+------+-----+---------+-------+
+| trade_date  | date          | NO   | PRI | NULL    |       |
+| open_price  | decimal(10,4) | YES  |     | NULL    |       |
+| high_price  | decimal(10,4) | YES  |     | NULL    |       |
+| low_price   | decimal(10,4) | YES  |     | NULL    |       |
+| close_price | decimal(10,4) | YES  |     | NULL    |       |
+| volume      | bigint        | YES  |     | NULL    |       |
++-------------+---------------+------+-----+---------+-------+
+
+## 🛠️ Setup & Installation
+1. **Dependencies**:
+   ```bash
+   pip install mysql-connector-python python-dotenv
