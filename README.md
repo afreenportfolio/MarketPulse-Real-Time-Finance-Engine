@@ -9,5 +9,5 @@
 - Loop through all the dates, and get the dictionary with all the key metrics, and print them.
 
 ### Setup Instructions:
-1. Run the Python script to fetch the key metrics through the nested timeseries
+1. Run the Python script and run it using `python real_time_market_pulse_dashboard_data_pipeline.py` to fetch the key metrics through the nested timeseries
 2. Your data pipeline is ready!
