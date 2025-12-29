@@ -7,3 +7,4 @@
 ### Phase 1: API to JSON
 ### Phase 2: Data Pipeline
 ### Phase 3: MySQL Integration
+### Phase 4: Stock Analysis
