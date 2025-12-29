@@ -5,6 +5,7 @@ This phase focuses on taking the raw stock data stored in `data.json` and adding
 ### Features
 - Reads local JSON data and prepares it for SQL insertion.
 - Uses `INSERT ... ON DUPLICATE KEY UPDATE` to ensure data stays fresh without creating duplicate date entries.
+- Designed to build a long-term historical record. By appending new daily data while preserving previous entries, the database grows beyond the 100-day limit of the standard "Compact" API response, enabling long-term trend analysis.
 - Utilizes `.env` files to keep database credentials secure.
 
 ### Database Schema
