@@ -10,6 +10,7 @@ This phase focuses on taking the raw stock data stored in `data.json` and adding
 
 ### Database Schema
 - The data is stored in a table named `ibm_daily_stock` with the following structure:
+
 `+-------------+---------------+------+-----+---------+-------+`
 
 `| Field       | Type          | Null | Key | Default | Extra |`
