@@ -1,51 +1,52 @@
-## Phase 3: MySQL Data Pipeline
+## Phase 4: Stock Analysis
 
-This phase focuses on taking the raw stock data stored in `data.json` and adding it into a structured MySQL relational database.
+This phase involves transforming raw historical data into financial indicators to identify trends and generate trading signals.
 
 ### Features
-- Reads local JSON data and prepares it for SQL insertion.
-- Uses `INSERT ... ON DUPLICATE KEY UPDATE` to ensure data stays fresh without creating duplicate date entries.
-- Designed to build a long-term historical record. By appending new daily data while preserving previous entries, the database grows beyond the 100-day limit of the standard "Compact" API response, enabling long-term trend analysis.
-- Utilizes `.env` files to keep database credentials secure.
+- Developed a 5-day Moving Average (`ma_5`) to smooth out price volatility and identify the underlying trend.
+- Calculated daily_return as a percentage to measure the daily "pulse" and intensity of price movements.
+- Implemented a crossover strategy that generates a `BUY` signal when the `close_price` is above the `ma_5` and a `SELL` signal when it falls below.
+- Created a secondary table, `ibm_analyzed_data`, to store these insights, ensuring the dashboard can access pre-calculated metrics for high performance.
 
 ### Database Schema
-- The data is stored in a table named `ibm_daily_stock` with the following structure:
+- The data is stored in a table named `ibm_analyzed_data` with the following structure:
 
-`+-------------+---------------+------+-----+---------+-------+`
+`+--------------+--------+------+-----+---------+-------+`
 
-`| Field       | Type          | Null | Key | Default | Extra |`
+`| Field        | Type   | Null | Key | Default | Extra |`
 
-`+-------------+---------------+------+-----+---------+-------+`
+`+--------------+--------+------+-----+---------+-------+`
 
-`| trade_date  | date          | NO   | PRI | NULL    |       |`
+`| trade_date   | date   | YES  |     | NULL    |       |`
 
-`| open_price  | decimal(10,4) | YES  |     | NULL    |       |`
+`| open_price   | double | YES  |     | NULL    |       |`
 
-`| high_price  | decimal(10,4) | YES  |     | NULL    |       |`
+`| high_price   | double | YES  |     | NULL    |       |`
 
-`| low_price   | decimal(10,4) | YES  |     | NULL    |       |`
+`| low_price    | double | YES  |     | NULL    |       |`
 
-`| close_price | decimal(10,4) | YES  |     | NULL    |       |`
+`| close_price  | double | YES  |     | NULL    |       |`
 
-`| volume      | bigint        | YES  |     | NULL    |       |`
+`| volume       | bigint | YES  |     | NULL    |       |`
 
-`+-------------+---------------+------+-----+---------+-------+`
+`| ma_5         | double | YES  |     | NULL    |       |`
 
-### Setup & Installation
+`| daily_return | double | YES  |     | NULL    |       |`
+
+`| signal       | text   | YES  |     | NULL    |       |`
+
+`+--------------+--------+------+-----+---------+-------+`
+
+### Setup Instruction
 1. Download `requirements.txt` and install the required libraries by running `pip install -r requirements.txt` in your terminal.
-2. Create the database and table in MySQL terminal.
-   - `CREATE DATABASE real_time_market_pulse_dashboard;`
-   - `USE real_time_market_pulse_dashboard;`
-   - `CREATE TABLE ibm_daily_stock(trade_date DATE PRIMARY KEY, open_price DECIMAL(10,4),high_price DECIMAL(10,4),low_price DECIMAL(10,4),close_price DECIMAL (10,4),volume BIGINT);`
-4. Add your `DB_HOST=localhost`, `DB_USER=root`, `DB_PASSWORD='YOUR_ACTUAL_MYSQL_PASSWORD'`, and `DB_NAME=real_time_market_pulse_dashboard` to your .env file.
-5. Copy/download the python script from this repository and run it using `python real_time_market_pulse_dashboard_mysql_integration.py`
+2. Copy/download the python script from this repository and run it using `python real_time_market_pulse_dashboard_stock_analysis.py`
 
 ### Challenges
-- Selecting the correct data types to ensure financial data accuracy. Used `DECIMAL(10,4)` for stock prices instead of `FLOAT` or `DOUBLE` to avoid `floating-point errors` that can occur during financial calculations, and used `BIGINT` for volume to accommodate high-frequency trading numbers.
-- Preventing the script from crashing or creating duplicate rows if the same data was uploaded more than once (e.g., if the script was ran twice on the same day). Implemented the `INSERT ... ON DUPLICATE KEY UPDATE` logic. This ensures the database stays clean and reflects the most recent data without errors.
-- Encountering the ProgrammingError: `Cursor is not connected` error. Leart about Python indentation and loop logic. The connection and cursor were being closed inside the loop after the first record, rather than outside the loop after all 100 records were processed.
-- Receiving the `io.UnsupportedOperation: not readable` error. Understood file "modes" in Python. I realized that a file opened for writing ('w') cannot be read from simultaneously. The solution was to properly close the write-stream before opening a new read-stream ('r').
-- Keeping sensitive database passwords and API keys out of the source code to follow security best practices. Integrated the `python-dotenv` library to pull credentials from a local `.env` file, ensuring they aren't accidentally pushed to a public GitHub repository.
+- When calculating the 5-day moving average, the first four rows of the dataset naturally lack enough preceding data to generate a result. To maintain a 5-day moving average, the first four days of any dataset lack sufficient history for a calculation. I had to ensure the logic accounted for these `NaN` (Not a Number) values to avoid calculation errors or broken visualizations in the future dashboard. To do this, I chose to preserve these as `NULL` values in the database to maintain data integrity. This ensures the archive remains an accurate historical record, while leaving the "cleanup" for the visualization layer in Phase 5.
+- I discovered that a high positive return followed by a lower positive return is not a "crash," but rather a deceleration of growth. Learning to interpret the `daily_return` metric as the "intensity" of movement—rather than just the direction—was key to providing accurate analysis.
+- Synchronizing two different tables (`ibm_daily_stock` and `ibm_analyzed_data`) required precise `INNER JOIN` logic. I had to ensure that the primary keys (`trade_dates`) matched perfectly and that typos in table references didn't break the query's ability to "summon" the combined dataset.
+- Identifying the "peak" events required using advanced `Pandas` functions like `.idxmax()` and slicing techniques (`.iloc`) to retrieve not just a single data point, but the surrounding "context window" (days before and after) to understand the full story of a price spike.
 
-### Final Database Output
-- Final databse output can be gotten by running `SELECT * FROM ibm_daily_stock;` in MySQL terminal
+### Final Output
+- Final databse output can be gotten by running `SELECT * FROM ibm_analyzed_data;` in MySQL terminal
+- Join your two tables together to compare raw prices with your new signals with `SELECT ibm_daily_stock.trade_date, ibm_daily_stock.close_price, ibm_analyzed_data.ma_5, ibm_analyzed_data.daily_return, ibm_analyzed_data.signal FROM ibm_daily_stock INNER JOIN ibm_analyzed_data ON ibm_daily_stock.trade_date = ibm_analyzed_data.trade_date ORDER BY ibm_daily_stock.trade_date ASC;` query in MySQL terminal.
