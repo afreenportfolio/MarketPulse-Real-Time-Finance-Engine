@@ -13,4 +13,4 @@
 - MIT License
 
 - ![Documentation](https://img.shields.io/badge/Type-Personal%20Project-blue)
-- ![Status](https://img.shields.io/badge/Status-In%20Progress-green)
+- ![Status](https://img.shields.io/badge/Status-Active%20Deployment-green)
